@@ -6,6 +6,7 @@
     <!-- Flash Messages (dipindahkan ke sini) -->
     @if(session('success'))
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6 container mx-auto mt-6">
+        
             <i class="fas fa-check-circle mr-2"></i> {{ session('success') }}
         </div>
     @endif
