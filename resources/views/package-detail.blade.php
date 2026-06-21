@@ -111,14 +111,23 @@
         </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="py-16 bg-pink-500">
-        <div class="container mx-auto px-4 text-center">
-            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Siap Menikah?</h2>
-            <p class="text-white text-lg mb-8 max-w-2xl mx-auto">Segera pesan paket wedding Anda dan dapatkan promo menarik!</p>
-            <a href="{{ url('/contact') }}" class="bg-white text-pink-500 px-8 py-3 rounded-full hover:bg-gray-100 transition duration-300 font-semibold">
-                <i class="fas fa-phone-alt mr-2"></i>Hubungi Kami
-            </a>
-        </div>
-    </section>
+<!-- CTA Section -->
+<section class="py-16 bg-pink-500">
+    <div class="container mx-auto px-4 text-center">
+        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+            Tertarik Dengan Paket Ini?
+        </h2>
+
+        <p class="text-white text-lg mb-8 max-w-2xl mx-auto">
+            Pilih paket wedding yang sesuai dengan kebutuhan Anda dan konsultasikan 
+            detail acara bersama tim kami untuk mendapatkan pelayanan terbaik.
+        </p>
+
+        <a href="{{ url('/contact') }}" 
+           class="bg-white text-pink-500 px-8 py-3 rounded-full hover:bg-gray-100 transition duration-300 font-semibold">
+            <i class="fas fa-phone-alt mr-2"></i>
+            Konsultasi Paket
+        </a>
+    </div>
+</section>
 @endsection

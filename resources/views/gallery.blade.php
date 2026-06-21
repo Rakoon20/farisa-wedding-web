@@ -16,9 +16,10 @@
     <section class="py-8 bg-white sticky top-16 z-20 shadow-sm">
         <div class="container mx-auto px-4">
             <div class="flex flex-wrap justify-center gap-3">
-                <button data-filter="all" class="filter-btn active bg-pink-500 text-white px-6 py-2 rounded-full hover:bg-pink-600 transition duration-300">Semua</button>
+                {{-- Tombol "Semua" tanpa kelas warna bawaan --}}
+                <button data-filter="all" class="filter-btn active px-6 py-2 rounded-full transition duration-300">Semua</button>
                 @foreach($categories as $key => $label)
-                    <button data-filter="{{ $key }}" class="filter-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-full hover:bg-pink-500 hover:text-white transition duration-300">
+                    <button data-filter="{{ $key }}" class="filter-btn px-6 py-2 rounded-full transition duration-300">
                         {{ $label }}
                     </button>
                 @endforeach
@@ -38,7 +39,7 @@
                                 <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition duration-300 flex items-center justify-center">
                                     <i class="fas fa-search-plus text-white text-3xl opacity-0 group-hover:opacity-100 transition duration-300"></i>
                                 </div>
-                                <div class="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black to-transparent p-4 opacity-0 group-hover:opacity-100 transition duration-300">
+                                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4 opacity-0 group-hover:opacity-100 transition duration-300">
                                     <p class="text-white font-semibold">{{ $gallery->title }}</p>
                                     <p class="text-gray-300 text-sm">{{ $gallery->subtitle }}</p>
                                 </div>
@@ -86,10 +87,22 @@
 
 @push('styles')
 <style>
+    /* Default tombol filter (abu-abu) */
+    .filter-btn {
+        background-color: #e5e7eb; /* gray-200 */
+        color: #374151; /* gray-700 */
+    }
+    /* Tombol aktif (pink) */
     .filter-btn.active {
-        background-color: #ec489a !important;
+        background-color: #ec489a !important; /* pink-500 */
         color: white !important;
     }
+    /* Efek hover untuk semua tombol */
+    .filter-btn:hover {
+        background-color: #ec489a;
+        color: white;
+    }
+
     .gallery-item {
         transition: all 0.3s ease;
     }
@@ -106,7 +119,7 @@
     let currentImages = [];
     let currentIndex = 0;
 
-    // Prepare gallery data
+    // Prepare gallery data untuk lightbox
     galleryData.forEach((item, index) => {
         currentImages.push({
             src: "{{ asset('storage') }}/" + item.image,
@@ -114,27 +127,35 @@
         });
     });
 
-    // Filter Gallery
-    document.querySelectorAll('.filter-btn').forEach(button => {
-        button.addEventListener('click', () => {
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            
-            const filterValue = button.getAttribute('data-filter');
-            const items = document.querySelectorAll('.gallery-item');
-            
-            items.forEach(item => {
-                if (filterValue === 'all' || item.getAttribute('data-category') === filterValue) {
-                    item.classList.remove('hide');
-                } else {
-                    item.classList.add('hide');
-                }
+    // ======= FILTER GALLERY =======
+    document.addEventListener('DOMContentLoaded', function () {
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const galleryItems = document.querySelectorAll('.gallery-item');
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                // 1. Hapus kelas 'active' dari semua tombol
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                // 2. Tambahkan 'active' ke tombol yang diklik
+                this.classList.add('active');
+
+                const filterValue = this.getAttribute('data-filter');
+
+                // 3. Tampilkan/sembunyikan item galeri
+                galleryItems.forEach(item => {
+                    if (filterValue === 'all' || item.getAttribute('data-category') === filterValue) {
+                        item.classList.remove('hide');
+                    } else {
+                        item.classList.add('hide');
+                    }
+                });
             });
         });
     });
 
-    // Lightbox functions
+    // ======= LIGHTBOX =======
     function openLightbox(index) {
+        if (!currentImages.length) return;
         currentIndex = index;
         const lightbox = document.getElementById('lightbox');
         const lightboxImg = document.getElementById('lightbox-img');
@@ -144,7 +165,6 @@
         lightboxCaption.innerText = currentImages[currentIndex].caption;
         lightbox.classList.remove('hidden');
         lightbox.classList.add('flex');
-        
         document.body.style.overflow = 'hidden';
     }
 
@@ -156,7 +176,7 @@
     }
 
     function nextImage() {
-        if (currentImages.length === 0) return;
+        if (!currentImages.length) return;
         currentIndex = (currentIndex + 1) % currentImages.length;
         const lightboxImg = document.getElementById('lightbox-img');
         const lightboxCaption = document.getElementById('lightbox-caption');
@@ -165,7 +185,7 @@
     }
 
     function prevImage() {
-        if (currentImages.length === 0) return;
+        if (!currentImages.length) return;
         currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length;
         const lightboxImg = document.getElementById('lightbox-img');
         const lightboxCaption = document.getElementById('lightbox-caption');
@@ -173,6 +193,7 @@
         lightboxCaption.innerText = currentImages[currentIndex].caption;
     }
 
+    // Event listener untuk tombol prev/next
     document.getElementById('prevBtn')?.addEventListener('click', (e) => {
         e.stopPropagation();
         prevImage();
@@ -188,8 +209,8 @@
         const lightbox = document.getElementById('lightbox');
         if (lightbox.classList.contains('flex')) {
             if (e.key === 'ArrowLeft') prevImage();
-            if (e.key === 'ArrowRight') nextImage();
-            if (e.key === 'Escape') closeLightbox();
+            else if (e.key === 'ArrowRight') nextImage();
+            else if (e.key === 'Escape') closeLightbox();
         }
     });
 </script>
