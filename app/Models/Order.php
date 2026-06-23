@@ -20,6 +20,7 @@ class Order extends Model
         'customer_address',
         'city',
         'event_date',
+        'venue_type', // tambahkan
         'package_code',
         'package_price',
         'total_price',
@@ -40,31 +41,49 @@ class Order extends Model
         'dp_amount' => 'integer',
     ];
 
-    // Generate order number otomatis
+    // Generate order number
     public static function generateOrderNumber()
     {
         $lastOrder = self::orderBy('created_at', 'desc')->first();
         if (!$lastOrder) {
             return 'WO-' . date('Y') . '-0001';
         }
-
         $lastNumber = intval(substr($lastOrder->order_number, -4));
         $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
         return 'WO-' . date('Y') . '-' . $newNumber;
     }
 
-    // Cek bentrok jadwal (max 2 acara/hari)
-    public static function isDateAvailable($eventDate, $excludeOrderNumber = null)
+    /**
+     * Cek ketersediaan tanggal dengan aturan:
+     * - Max 2 acara/hari
+     * - Tidak boleh 2 acara tenda di hari yang sama
+     */
+    public static function isDateAvailable($eventDate, $venueType, $excludeOrderNumber = null)
     {
-        $query = self::where('event_date', $eventDate)
+        $query = self::whereDate('event_date', $eventDate)
             ->whereIn('status', ['dp_paid', 'installment', 'paid', 'completed']);
 
         if ($excludeOrderNumber) {
             $query->where('order_number', '!=', $excludeOrderNumber);
         }
 
-        $count = $query->count();
-        return $count < 2; // max 2 acara per hari
+        $existingOrders = $query->get();
+        $count = $existingOrders->count();
+
+        // 1. Max 2 acara per hari
+        if ($count >= 2) {
+            return false;
+        }
+
+        // 2. Jika sudah ada 1 acara dan venue yang dipilih adalah 'tenda'
+        if ($count === 1 && $venueType === 'tenda') {
+            $existingVenue = $existingOrders->first()->venue_type;
+            if ($existingVenue === 'tenda') {
+                return false; // Tidak boleh dua tenda di hari yang sama
+            }
+        }
+
+        return true;
     }
 
     // Relasi ke package
@@ -145,14 +164,11 @@ class Order extends Model
     protected static function booted()
     {
         static::updating(function ($order) {
-            // Cek apakah status berubah
             if ($order->isDirty('status')) {
                 $oldStatus = $order->getOriginal('status');
                 $newStatus = $order->status;
 
-                // Saat berubah dari pending ke dp_paid
                 if ($oldStatus == 'pending' && $newStatus == 'dp_paid') {
-                    // Buat payment DP jika belum ada
                     $existingDp = Payment::where('order_number', $order->order_number)
                         ->where('type', 'dp')
                         ->exists();
@@ -162,14 +178,13 @@ class Order extends Model
                             'type' => 'dp',
                             'amount' => $order->dp_amount,
                             'payment_date' => now(),
-                            'method' => 'transfer', // default, admin bisa edit nanti
+                            'method' => 'transfer',
                             'proof' => null,
                             'notes' => 'Otomatis dari update status DP',
                         ]);
                     }
                 }
 
-                // Saat berubah menjadi paid (lunas)
                 if ($newStatus == 'paid') {
                     $totalPaid = $order->payments()->sum('amount');
                     $remaining = $order->total_price - $totalPaid;

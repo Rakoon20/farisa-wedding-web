@@ -7,11 +7,9 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FittingController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\TrackingController;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
 Route::view("/", "home")->name("home");
@@ -28,6 +26,8 @@ Route::get('/order/check-date', [OrderController::class, 'checkDate'])->name('or
 Route::post('/order', [OrderController::class, 'submit'])->name('order.submit');
 Route::get('/order/success/{order}', [OrderController::class, 'success'])->name('order.success');
 
+// Tracking routes
+Route::get('/tracking/phone/{phone}', [TrackingController::class, 'showByPhone'])->name('tracking.phone');
 Route::get('/tracking/{orderNumber}', [TrackingController::class, 'show'])->name('tracking.show');
 Route::get('/tracking', fn() => view('tracking'))->name('tracking');
 Route::post('/upload-payment', [TrackingController::class, 'uploadPayment'])->name('upload.payment');

@@ -18,66 +18,105 @@ class TrackingController extends Controller
             if (!$order) {
                 return response()->json(['order' => null]);
             }
-
-            $payments = Payment::where('order_number', $orderNumber)->orderBy('payment_date', 'asc')->get();
-            $totalPaid = $payments->where('is_confirmed', true)->sum('amount');
-
-            // Galeri contoh baju - aman terhadap kolom yang tidak ada
-            $clothGallery = [];
-            if (Schema::hasTable('items') && Schema::hasColumn('items', 'category') && Schema::hasColumn('items', 'color')) {
-                try {
-                    $clothGallery = \App\Models\Item::where('is_active', true)
-                        ->where('category', 'busana')
-                        ->whereNotNull('image')
-                        ->select('name', 'color', 'image')
-                        ->get()
-                        ->map(fn($item) => [
-                            'name'      => $item->name,
-                            'color'     => $item->color,
-                            'image_url' => $item->image ? asset('storage/' . $item->image) : null,
-                        ])
-                        ->filter(fn($item) => !empty($item['image_url']))
-                        ->values();
-                } catch (\Exception $e) {
-                    Log::warning('Gagal ambil galeri baju: ' . $e->getMessage());
-                }
-            }
-
-            return response()->json([
-                'order' => [
-                    'order_number'      => $order->order_number,
-                    'customer_name'     => $order->customer_name,
-                    'event_date'        => $order->event_date,
-                    'package_code'      => $order->package_code,
-                    'package_name'      => $order->package?->name,
-                    'total_price'       => $order->total_price,
-                    'status'            => $order->status,
-                    'total_paid'        => $totalPaid,
-                    'additional_charge' => $order->additional_charge,
-                    'charge_description' => $order->charge_description,
-                    'remaining_payment' => $order->total_price - $totalPaid,
-                    'dp_amount'         => $order->dp_amount,
-                    'can_fitting'       => $order->canFitting(),
-                    'venue_type'        => $order->venue_type,
-                    'venue_label'       => $order->venue_type == 'tenda' ? 'Tenda' : 'Gedung',
-                ],
-                'payments' => $payments->map(fn($p) => [
-                    'id'           => $p->id,
-                    'type'         => $p->type,
-                    'type_label'   => $p->type == 'dp' ? 'DP Booking' : ($p->type == 'final' ? 'Pelunasan' : 'Cicilan'),
-                    'amount'       => $p->amount,
-                    'payment_date' => $p->payment_date?->format('Y-m-d'),
-                    'method'       => $p->method,
-                    'proof'        => $p->proof ? asset('storage/' . $p->proof) : null,
-                    'notes'        => $p->notes,
-                    'is_confirmed' => $p->is_confirmed,
-                ]),
-                'cloth_gallery' => $clothGallery,
-            ]);
+            return $this->buildTrackingResponse($order);
         } catch (\Exception $e) {
             Log::error('Tracking error: ' . $e->getMessage() . ' - ' . $e->getFile() . ':' . $e->getLine());
             return response()->json(['order' => null, 'error' => true], 500);
         }
+    }
+
+    public function showByPhone($phone)
+    {
+        try {
+            $orders = Order::with('package')
+                ->where('customer_phone', $phone)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            if ($orders->isEmpty()) {
+                return response()->json(['orders' => null]);
+            }
+
+            if ($orders->count() === 1) {
+                return $this->buildTrackingResponse($orders->first());
+            }
+
+            // Multiple orders found – return list
+            return response()->json([
+                'multiple' => true,
+                'orders' => $orders->map(fn($order) => [
+                    'order_number' => $order->order_number,
+                    'customer_name' => $order->customer_name,
+                    'event_date' => $order->event_date,
+                    'package_name' => $order->package?->name,
+                    'total_price' => $order->total_price,
+                    'status' => $order->status,
+                    'status_label' => $order->getStatusLabelAttribute(),
+                    'venue_label' => $order->venue_type == 'tenda' ? 'Tenda' : 'Gedung',
+                ])
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Tracking error: ' . $e->getMessage() . ' - ' . $e->getFile() . ':' . $e->getLine());
+            return response()->json(['error' => true], 500);
+        }
+    }
+
+    private function buildTrackingResponse($order)
+    {
+        $payments = Payment::where('order_number', $order->order_number)->orderBy('payment_date', 'asc')->get();
+        $totalPaid = $payments->where('is_confirmed', true)->sum('amount');
+
+        $clothGallery = [];
+        if (Schema::hasTable('items') && Schema::hasColumn('items', 'category') && Schema::hasColumn('items', 'color')) {
+            try {
+                $clothGallery = \App\Models\Item::where('is_active', true)
+                    ->where('category', 'busana')
+                    ->whereNotNull('image')
+                    ->select('name', 'color', 'image')
+                    ->get()
+                    ->map(fn($item) => [
+                        'name'      => $item->name,
+                        'color'     => $item->color,
+                        'image_url' => $item->image ? asset('storage/' . $item->image) : null,
+                    ])
+                    ->filter(fn($item) => !empty($item['image_url']))
+                    ->values();
+            } catch (\Exception $e) {
+                Log::warning('Gagal ambil galeri baju: ' . $e->getMessage());
+            }
+        }
+
+        return response()->json([
+            'order' => [
+                'order_number'      => $order->order_number,
+                'customer_name'     => $order->customer_name,
+                'event_date'        => $order->event_date,
+                'package_code'      => $order->package_code,
+                'package_name'      => $order->package?->name,
+                'total_price'       => $order->total_price,
+                'status'            => $order->status,
+                'total_paid'        => $totalPaid,
+                'additional_charge' => $order->additional_charge,
+                'charge_description' => $order->charge_description,
+                'remaining_payment' => $order->total_price - $totalPaid,
+                'dp_amount'         => $order->dp_amount,
+                'can_fitting'       => $order->canFitting(),
+                'venue_type'        => $order->venue_type,
+                'venue_label'       => $order->venue_type == 'tenda' ? 'Tenda' : 'Gedung',
+            ],
+            'payments' => $payments->map(fn($p) => [
+                'id'           => $p->id,
+                'type'         => $p->type,
+                'type_label'   => $p->type == 'dp' ? 'DP Booking' : ($p->type == 'final' ? 'Pelunasan' : 'Cicilan'),
+                'amount'       => $p->amount,
+                'payment_date' => $p->payment_date?->format('Y-m-d'),
+                'method'       => $p->method,
+                'proof'        => $p->proof ? asset('storage/' . $p->proof) : null,
+                'notes'        => $p->notes,
+                'is_confirmed' => $p->is_confirmed,
+            ]),
+            'cloth_gallery' => $clothGallery,
+        ]);
     }
 
     public function uploadPayment(Request $request)
@@ -91,18 +130,15 @@ class TrackingController extends Controller
 
         $order = Order::where('order_number', $request->order_number)->first();
 
-        // Hitung sisa tagihan (hanya payment yang sudah dikonfirmasi)
         $totalConfirmed = $order->payments()->where('is_confirmed', true)->sum('amount');
         $remaining = $order->total_price - $totalConfirmed;
 
-        // Validasi server: jumlah pembayaran tidak boleh melebihi sisa
         if ($request->amount > $remaining) {
             return response()->json(['message' => 'Jumlah pembayaran melebihi sisa tagihan.'], 422);
         }
 
         $proofPath = $request->file('proof')->store('payment_proofs', 'public');
 
-        // Tentukan tipe pembayaran
         $existingConfirmed = $order->payments()->where('is_confirmed', true)->sum('amount');
         $type = $existingConfirmed == 0 ? 'dp' : 'installment';
         $totalAfter = $existingConfirmed + $request->amount;

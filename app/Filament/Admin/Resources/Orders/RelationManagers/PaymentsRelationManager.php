@@ -24,10 +24,6 @@ class PaymentsRelationManager extends RelationManager
 {
     protected static string $relationship = 'payments';
 
-    /**
-     * Tentukan apakah tombol "New Payment" boleh ditampilkan.
-     * Tombol disembunyikan jika order sudah lunas atau selesai.
-     */
     public function canCreate(): bool
     {
         $order = $this->getOwnerRecord();
@@ -59,16 +55,32 @@ class PaymentsRelationManager extends RelationManager
                         'dp' => 'DP Booking',
                         'installment' => 'Cicilan',
                         'final' => 'Pelunasan',
-                    ])->required(),
+                    ])
+                    ->required(),
                 TextInput::make('amount')
                     ->label('Jumlah')
                     ->numeric()
                     ->prefix('Rp')
-                    ->required(),
+                    ->required()
+                    ->live(onBlur: true)
+                    ->rule(function () {
+                        $order = $this->getOwnerRecord();
+                        if (!$order) {
+                            return 'required';
+                        }
+                        $totalConfirmed = $order->payments()->where('is_confirmed', true)->sum('amount');
+                        $remaining = $order->total_price - $totalConfirmed;
+                        return function ($attribute, $value, $fail) use ($remaining) {
+                            if ($value > $remaining) {
+                                $fail('Jumlah pembayaran tidak boleh melebihi sisa tagihan (Rp ' . number_format($remaining, 0, ',', '.') . ').');
+                            }
+                        };
+                    }),
                 DatePicker::make('payment_date')
                     ->label('Tanggal Bayar')
                     ->default(now())
-                    ->required(),
+                    ->required()
+                    ->disabled(true), // Readonly
                 Select::make('method')
                     ->label('Metode')
                     ->options([
@@ -169,7 +181,7 @@ class PaymentsRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->visible(fn() => $this->canCreate()), // ❗ tombol hanya muncul jika canCreate() true
+                    ->visible(fn() => $this->canCreate()),
             ])
             ->actions([
                 ViewAction::make(),
@@ -200,6 +212,6 @@ class PaymentsRelationManager extends RelationManager
                             ->send();
                     }),
             ])
-            ->bulkActions([]); // tidak perlu bulk delete karena payment tidak boleh dihapus massal
+            ->bulkActions([]);
     }
 }

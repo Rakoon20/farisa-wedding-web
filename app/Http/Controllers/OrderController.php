@@ -13,9 +13,6 @@ use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
-    /**
-     * Halaman form pemesanan
-     */
     public function index(Request $request)
     {
         $selectedPackage = null;
@@ -36,7 +33,6 @@ class OrderController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Tambahkan ini untuk data items
         $items = \App\Models\Item::where('is_active', true)
             ->select('code', 'name', 'price')
             ->get();
@@ -44,47 +40,45 @@ class OrderController extends Controller
         return view('order', compact('selectedPackage', 'packageItems', 'packages', 'items'));
     }
 
-    /**
-     * Cek ketersediaan tanggal
-     */
     public function checkDate(Request $request)
     {
         $date = $request->get('date');
-        $isAvailable = Order::isDateAvailable($date);
+        $venueType = $request->get('venue_type');
+
+        $isAvailable = Order::isDateAvailable($date, $venueType);
 
         return response()->json([
             'available' => $isAvailable,
-            'message' => $isAvailable ? 'Tanggal tersedia' : 'Maaf, tanggal sudah penuh (max 2 acara per hari)'
+            'message' => $isAvailable
+                ? 'Tanggal tersedia'
+                : 'Maaf, tanggal sudah penuh (max 2 acara/hari) atau tidak bisa dua acara tenda di hari yang sama.'
         ]);
     }
 
-    /**
-     * Proses pemesanan
-     */
     public function submit(Request $request)
     {
-        // Validasi
         $validated = $request->validate([
             'package_code' => 'required|exists:packages,code',
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:20',
             'customer_address' => 'nullable|string',
             'city' => 'required|in:cilegon,merak,luar',
-            'event_date' => 'required|date|after:' . now()->addDays(30)->format('Y-m-d'), // ← batasi minimal 30 hari
+            'venue_type' => 'required|in:gedung,tenda',
+            'event_date' => 'required|date|after:' . now()->addDays(30)->format('Y-m-d'),
             'adjustments' => 'nullable|array',
             'adjustments.*.item_code' => 'required_with:adjustments.*|exists:items,code',
             'adjustments.*.quantity' => 'required_with:adjustments.*|integer',
             'notes' => 'nullable|string',
         ]);
 
-        // Cek ketersediaan tanggal
-        if (!Order::isDateAvailable($validated['event_date'])) {
-            return redirect()->back()->withInput()->with('error', 'Maaf, tanggal tersebut sudah penuh. Silakan pilih tanggal lain.');
+        if (!Order::isDateAvailable($validated['event_date'], $validated['venue_type'])) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Maaf, tanggal tersebut sudah penuh atau tidak bisa dua acara tenda di hari yang sama.');
         }
 
         $package = Package::with('items')->where('code', $validated['package_code'])->first();
 
-        // Hitung adjustment
         $packageTotal = $package->price;
         $adjustmentTotal = 0;
         $adjustments = [];
@@ -107,11 +101,9 @@ class OrderController extends Controller
             }
         }
 
-        // ✅ Biaya tambahan tidak otomatis – akan diisi admin nanti
         $additionalCharge = 0;
         $chargeDescription = null;
-
-        $finalTotal = $packageTotal + $adjustmentTotal; // tanpa biaya tambahan
+        $finalTotal = $packageTotal + $adjustmentTotal;
         $dpAmount = 1000000;
 
         DB::beginTransaction();
@@ -123,6 +115,7 @@ class OrderController extends Controller
                 'customer_address' => $validated['customer_address'],
                 'city' => $validated['city'],
                 'event_date' => $validated['event_date'],
+                'venue_type' => $validated['venue_type'],
                 'package_code' => $package->code,
                 'package_price' => $packageTotal,
                 'total_price' => $finalTotal,
@@ -131,7 +124,7 @@ class OrderController extends Controller
                 'charge_description' => $chargeDescription,
                 'status' => 'pending',
                 'notes' => $validated['notes'],
-                'created_by' => 1, // sesuaikan
+                'created_by' => 1,
             ]);
 
             foreach ($adjustments as $adj) {
@@ -149,9 +142,6 @@ class OrderController extends Controller
         }
     }
 
-    /**
-     * Halaman sukses
-     */
     public function success($orderNumber)
     {
         $order = Order::with(['package', 'orderItems.item'])->where('order_number', $orderNumber)->first();
