@@ -11,7 +11,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Toggle;
+// use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Hidden;
 use App\Models\Package;
 use Carbon\Carbon;
@@ -123,16 +123,16 @@ class OrderForm
                                 ->required()
                                 ->default('pending'),
                         ]),
-                        Grid::make(2)->schema([
-                            Toggle::make('is_outside_city')
-                                ->label('Lokasi di luar Cilegon/Merak?')
-                                ->default(false)
-                                ->helperText('Informasi dari customer'),
-                            Toggle::make('is_narrow_alley')
-                                ->label('Lokasi di gang sempit (akses < 500m)?')
-                                ->default(false)
-                                ->helperText('Informasi dari customer'),
-                        ]),
+                        // Grid::make(2)->schema([
+                        //     Toggle::make('is_outside_city')
+                        //         ->label('Lokasi di luar Cilegon/Merak?')
+                        //         ->default(false)
+                        //         ->helperText('Informasi dari customer'),
+                        //     Toggle::make('is_narrow_alley')
+                        //         ->label('Lokasi di gang sempit (akses < 500m)?')
+                        //         ->default(false)
+                        //         ->helperText('Informasi dari customer'),
+                        // ]),
                         Grid::make(3)->schema([
                             TextInput::make('package_price')
                                 ->label('Harga Paket')

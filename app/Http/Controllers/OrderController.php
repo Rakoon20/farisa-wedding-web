@@ -32,6 +32,7 @@ class OrderController extends Controller
         }
 
         $packages = Package::where('is_active', true)
+            ->with('items')
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -69,7 +70,7 @@ class OrderController extends Controller
             'customer_phone' => 'required|string|max:20',
             'customer_address' => 'nullable|string',
             'city' => 'required|in:cilegon,merak,luar',
-            'event_date' => 'required|date|after:today',
+            'event_date' => 'required|date|after:' . now()->addDays(30)->format('Y-m-d'), // ← batasi minimal 30 hari
             'adjustments' => 'nullable|array',
             'adjustments.*.item_code' => 'required_with:adjustments.*|exists:items,code',
             'adjustments.*.quantity' => 'required_with:adjustments.*|integer',

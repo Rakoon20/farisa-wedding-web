@@ -56,7 +56,8 @@ class PackageForm
                     ->label("Deskripsi")
                     ->rows(3)
                     ->columnSpanFull(),
-                Grid::make(2)->schema([
+                // Grid untuk harga, diskon, dan status aktif
+                Grid::make(3)->schema([
                     TextInput::make("price")
                         ->label("Harga Paket")
                         ->required()
@@ -67,18 +68,71 @@ class PackageForm
                         ->readOnly()
                         ->dehydrated(true)
                         ->helperText("Harga dihitung otomatis dari item dan quantity"),
+                    TextInput::make("discount")
+                        ->label("Diskon (Rp)")
+                        ->numeric()
+                        ->prefix("Rp")
+                        ->minValue(0)
+                        ->default(0)
+                        ->helperText("Potongan harga dalam Rupiah (maksimal 50% dari harga)")
+                        ->live()
+                        ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                            $price = $get('price');
+                            if ($price > 0) {
+                                $maxDiscount = $price * 0.5;
+                                if ($state > $maxDiscount) {
+                                    $set('discount', $maxDiscount);
+                                    \Filament\Notifications\Notification::make()
+                                        ->warning()
+                                        ->title('Diskon Melebihi Batas')
+                                        ->body('Diskon tidak boleh lebih dari 50% harga paket. Diskon di-set ke ' . number_format($maxDiscount, 0, ',', '.') . '.')
+                                        ->send();
+                                }
+                            }
+                        }),
                     Toggle::make("is_active")
                         ->label("Aktif")
                         ->default(true)
                         ->inline(false),
                 ]),
+                // Tampilkan harga setelah diskon
+                Placeholder::make("final_price")
+                    ->label("Harga Setelah Diskon")
+                    ->content(function (Get $get) {
+                        $price = $get('price') ?? 0;
+                        $discount = $get('discount') ?? 0;
+                        return 'Rp ' . number_format($price - $discount, 0, ',', '.');
+                    }),
+
+                // ===== FOTO UTAMA =====
                 FileUpload::make("image")
-                    ->label("Foto Paket")
+                    ->label("Foto Utama Paket")
                     ->image()
                     ->directory("packages")
                     ->visibility("public")
                     ->disk('public')
                     ->imageEditor()
+                    ->columnSpanFull(),
+
+                // ===== GALERI GAMBAR (maks. 5) menggunakan REPEATER =====
+                Repeater::make("images")
+                    ->label("Galeri Paket (maks. 5 gambar)")
+                    ->relationship("images")
+                    ->schema([
+                        FileUpload::make("image")
+                            ->label("Gambar")
+                            ->image()
+                            ->directory("packages")
+                            ->visibility("public")
+                            ->disk("public")
+                            ->imageEditor()
+                            ->required(),
+                    ])
+                    ->maxItems(5)
+                    ->addActionLabel("Tambah Gambar")
+                    ->reorderable()
+                    ->orderColumn("sort_order")
+                    ->helperText("Unggah maksimal 5 gambar untuk galeri paket.")
                     ->columnSpanFull(),
             ]),
 

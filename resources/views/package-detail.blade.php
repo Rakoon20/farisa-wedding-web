@@ -17,21 +17,56 @@
         <div class="container mx-auto px-4">
             <div class="max-w-4xl mx-auto">
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-                    <!-- Image -->
-                    @if($package->image)
-                        <img src="{{ Storage::url($package->image) }}" alt="{{ $package->name }}" class="w-full h-80 object-cover">
-                    @else
-                        <div class="w-full h-80 bg-linear-to-br from-pink-200 to-pink-300 flex items-center justify-center">
-                            <i class="fas fa-image text-pink-400 text-6xl"></i>
+                    <!-- GAMBAR UTAMA -->
+                    <div class="relative">
+                        @if($package->image)
+                            <img src="{{ Storage::url($package->image) }}" alt="{{ $package->name }}" class="w-full h-80 object-cover">
+                        @elseif($package->images->first())
+                            <img src="{{ Storage::url($package->images->first()->image) }}" alt="{{ $package->name }}" class="w-full h-80 object-cover">
+                        @else
+                            <div class="w-full h-80 bg-linear-to-br from-pink-200 to-pink-300 flex items-center justify-center">
+                                <i class="fas fa-image text-pink-400 text-6xl"></i>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- GALERI GAMBAR (LIST THUMBNAIL) -->
+                    @if($package->images->count() > 0)
+                        <div class="p-4 bg-gray-100 border-b border-gray-200">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Galeri Foto</h4>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                @foreach($package->images as $image)
+                                    <div class="relative group cursor-pointer" onclick="openLightbox('{{ Storage::url($image->image) }}')">
+                                        <img src="{{ Storage::url($image->image) }}" 
+                                             alt="Galeri {{ $package->name }}" 
+                                             class="w-full h-24 object-cover rounded-lg shadow-sm hover:shadow-md transition">
+                                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition flex items-center justify-center">
+                                            <i class="fas fa-search-plus text-white text-xl opacity-0 group-hover:opacity-100 transition"></i>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">Klik gambar untuk memperbesar</p>
                         </div>
                     @endif
 
                     <!-- Content -->
                     <div class="p-8">
-                        <!-- Price -->
+                        <!-- Price with Discount -->
                         <div class="mb-6 pb-6 border-b border-gray-200">
-                            <span class="text-gray-500 text-lg">Harga Paket:</span>
-                            <span class="text-pink-500 font-bold text-4xl ml-3">Rp {{ number_format($package->price, 0, ',', '.') }}</span>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <span class="text-gray-500 text-lg">Harga Paket:</span>
+                                @php
+                                    $finalPrice = $package->price - ($package->discount ?? 0);
+                                @endphp
+                                @if($package->discount > 0)
+                                    <span class="text-gray-400 text-2xl line-through">Rp {{ number_format($package->price, 0, ',', '.') }}</span>
+                                    <span class="text-pink-500 font-bold text-4xl">Rp {{ number_format($finalPrice, 0, ',', '.') }}</span>
+                                    <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">Hemat Rp {{ number_format($package->discount, 0, ',', '.') }}</span>
+                                @else
+                                    <span class="text-pink-500 font-bold text-4xl">Rp {{ number_format($package->price, 0, ',', '.') }}</span>
+                                @endif
+                            </div>
                         </div>
 
                         <!-- Description -->
@@ -111,23 +146,53 @@
         </div>
     </section>
 
-<!-- CTA Section -->
-<section class="py-16 bg-pink-500">
-    <div class="container mx-auto px-4 text-center">
-        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
-            Tertarik Dengan Paket Ini?
-        </h2>
+    <!-- CTA Section -->
+    <section class="py-16 bg-pink-500">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+                Tertarik Dengan Paket Ini?
+            </h2>
+            <p class="text-white text-lg mb-8 max-w-2xl mx-auto">
+                Pilih paket wedding yang sesuai dengan kebutuhan Anda dan konsultasikan 
+                detail acara bersama tim kami untuk mendapatkan pelayanan terbaik.
+            </p>
+            <a href="{{ url('/contact') }}" 
+               class="bg-white text-pink-500 px-8 py-3 rounded-full hover:bg-gray-100 transition duration-300 font-semibold">
+                <i class="fas fa-phone-alt mr-2"></i>
+                Konsultasi Paket
+            </a>
+        </div>
+    </section>
 
-        <p class="text-white text-lg mb-8 max-w-2xl mx-auto">
-            Pilih paket wedding yang sesuai dengan kebutuhan Anda dan konsultasikan 
-            detail acara bersama tim kami untuk mendapatkan pelayanan terbaik.
-        </p>
-
-        <a href="{{ url('/contact') }}" 
-           class="bg-white text-pink-500 px-8 py-3 rounded-full hover:bg-gray-100 transition duration-300 font-semibold">
-            <i class="fas fa-phone-alt mr-2"></i>
-            Konsultasi Paket
-        </a>
+    <!-- Lightbox Modal (untuk preview gambar galeri) -->
+    <div id="lightboxModal" class="fixed inset-0 bg-black bg-opacity-90 hidden items-center justify-center z-50" onclick="closeLightbox()">
+        <div class="relative max-w-4xl w-full mx-4" onclick="event.stopPropagation()">
+            <button onclick="closeLightbox()" class="absolute -top-10 right-0 text-white text-3xl hover:text-pink-400 transition">&times;</button>
+            <img id="lightboxImage" src="" alt="Preview" class="w-full rounded-lg shadow-2xl max-h-[80vh] object-contain">
+        </div>
     </div>
-</section>
 @endsection
+
+@push('scripts')
+<script>
+    function openLightbox(url) {
+        const modal = document.getElementById('lightboxModal');
+        const img = document.getElementById('lightboxImage');
+        img.src = url;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        const modal = document.getElementById('lightboxModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = 'auto';
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeLightbox();
+    });
+</script>
+@endpush

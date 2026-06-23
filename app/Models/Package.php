@@ -55,4 +55,10 @@ class Package extends Model
     {
         return $this->hasMany(PackageItem::class, "package_code", "code");
     }
+
+    public function images()
+    {
+        return $this->hasMany(PackageImage::class, 'package_code', 'code')
+            ->orderBy('sort_order');
+    }
 }

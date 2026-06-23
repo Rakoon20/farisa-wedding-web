@@ -36,7 +36,7 @@
                 </div>
             @endif
 
-            <form id="orderForm" action="{{ route('order.submit') }}" method="POST" class="bg-white rounded-xl shadow-lg p-8">
+            <form id="orderForm" action="{{ route('order.submit') }}" method="POST" class="bg-white rounded-xl shadow-lg p-8" autocomplete="off">
                 @csrf
 
                 <!-- Pilih Paket -->
@@ -71,7 +71,7 @@
                     </button>
                 </div>
 
-                <!-- Total Harga (tanpa biaya tambahan di frontend) -->
+                <!-- Total Harga -->
                 <div id="totalSection" class="hidden mb-6 p-4 bg-pink-50 rounded-lg">
                     <div class="flex justify-between items-center">
                         <span class="font-bold text-gray-800 text-lg">Total Harga:</span>
@@ -101,9 +101,15 @@
                 <!-- Tanggal & Venue -->
                 <div class="mt-4">
                     <label for="event_date" class="block text-gray-700 font-semibold mb-2">Tanggal Acara <span class="text-red-500">*</span></label>
-                    <input type="date" name="event_date" id="event_date" value="{{ old('event_date') }}" 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+                    <input type="date" 
+                        name="event_date" 
+                        id="event_date" 
+                        value="{{ old('event_date') }}" 
+                        min="{{ date('Y-m-d', strtotime('+30 days')) }}" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500" 
+                        required>
                     <div id="dateAvailability" class="text-sm mt-1"></div>
+                    <p class="text-xs text-gray-400 mt-1">Minimal 30 hari sebelum tanggal acara.</p>
                 </div>
 
                 <div class="mt-4">
@@ -159,7 +165,6 @@
 <script>
     const allItems = @json($items ?? []);
     const packagesData = @json($packages);
-    const packageItemsApiUrl = "{{ url('/api/package-items') }}";
     const checkDateRoute = "{{ route('order.check-date') }}";
 
     let currentPackage = null;
@@ -280,36 +285,34 @@
     }
 
     function loadPackageDetail(package) {
-        fetch(`${packageItemsApiUrl}/${package.code}`)
-            .then(res => res.json())
-            .then(data => {
-                const container = document.getElementById('packageItemsList');
-                if (data.items && data.items.length > 0) {
-                    packageDefaultItems = data.items.map(item => ({
-                        code: item.code,
-                        name: item.name,
-                        defaultQty: item.pivot.quantity,
-                        price: item.price
-                    }));
-                    container.innerHTML = '<div class="space-y-1">' + data.items.map(item => 
-                        `<div class="flex justify-between text-sm">
-                            <span>• ${item.name} x${item.pivot.quantity}</span>
-                            <span>Rp ${formatNumber(item.price * item.pivot.quantity)}</span>
-                        </div>`
-                    ).join('') + '</div>';
-                } else {
-                    container.innerHTML = '<p class="text-gray-500 text-sm">Tidak ada item dalam paket ini</p>';
-                    packageDefaultItems = [];
-                }
-                document.getElementById('packagePrice').innerText = 'Rp ' + formatNumber(package.price);
-                document.getElementById('adjustmentItems').innerHTML = '';
-                adjustmentCount = 0;
-                calculateTotal();
-            })
-            .catch(err => {
-                console.error('Error loading package details:', err);
-                showToast('Gagal memuat detail paket', 'error');
-            });
+        const packageData = packagesData.find(p => p.code === package.code);
+        if (!packageData) {
+            showToast('Paket tidak ditemukan', 'error');
+            return;
+        }
+        const items = packageData.items || [];
+        const container = document.getElementById('packageItemsList');
+        if (items.length > 0) {
+            packageDefaultItems = items.map(item => ({
+                code: item.code,
+                name: item.name,
+                defaultQty: item.pivot.quantity,
+                price: item.price
+            }));
+            container.innerHTML = '<div class="space-y-1">' + items.map(item => 
+                `<div class="flex justify-between text-sm">
+                    <span>• ${item.name} x${item.pivot.quantity}</span>
+                    <span>Rp ${formatNumber(item.price * item.pivot.quantity)}</span>
+                </div>`
+            ).join('') + '</div>';
+        } else {
+            container.innerHTML = '<p class="text-gray-500 text-sm">Tidak ada item dalam paket ini</p>';
+            packageDefaultItems = [];
+        }
+        document.getElementById('packagePrice').innerText = 'Rp ' + formatNumber(package.price);
+        document.getElementById('adjustmentItems').innerHTML = '';
+        adjustmentCount = 0;
+        calculateTotal();
     }
 
     document.getElementById('addAdjustmentBtn').addEventListener('click', addAdjustmentRow);

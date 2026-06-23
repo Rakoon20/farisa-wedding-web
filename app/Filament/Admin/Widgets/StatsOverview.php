@@ -4,21 +4,44 @@ namespace App\Filament\Admin\Widgets;
 
 use App\Models\Order;
 use App\Models\Payment;
+use Carbon\Carbon;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Illuminate\Support\Facades\Session;
 
 class StatsOverview extends StatsOverviewWidget
 {
     protected function getStats(): array
     {
-        $totalOrders = Order::count();
-        $completedOrders = Order::where('status', 'completed')->count();
+        $start = Session::get('stats_start_date');
+        $end = Session::get('stats_end_date');
 
-        // Total pemasukan dari pembayaran yang sudah dikonfirmasi
-        $totalRevenue = Payment::where('is_confirmed', true)->sum('amount');
+        $startDate = $start ? Carbon::parse($start)->startOfDay() : null;
+        $endDate = $end ? Carbon::parse($end)->endOfDay() : null;
 
-        // Jumlah pembayaran yang menunggu konfirmasi admin
-        $pendingConfirmations = Payment::where('is_confirmed', false)->count();
+        // Total Order
+        $orderQuery = Order::query();
+        if ($startDate) $orderQuery->whereDate('created_at', '>=', $startDate);
+        if ($endDate) $orderQuery->whereDate('created_at', '<=', $endDate);
+        $totalOrders = $orderQuery->count();
+
+        // Order Selesai
+        $completedQuery = Order::where('status', 'completed');
+        if ($startDate) $completedQuery->whereDate('created_at', '>=', $startDate);
+        if ($endDate) $completedQuery->whereDate('created_at', '<=', $endDate);
+        $completedOrders = $completedQuery->count();
+
+        // Total Pemasukan
+        $paymentQuery = Payment::where('is_confirmed', true);
+        if ($startDate) $paymentQuery->whereDate('payment_date', '>=', $startDate);
+        if ($endDate) $paymentQuery->whereDate('payment_date', '<=', $endDate);
+        $totalRevenue = $paymentQuery->sum('amount');
+
+        // Pending Konfirmasi
+        $pendingQuery = Payment::where('is_confirmed', false);
+        if ($startDate) $pendingQuery->whereDate('payment_date', '>=', $startDate);
+        if ($endDate) $pendingQuery->whereDate('payment_date', '<=', $endDate);
+        $pendingConfirmations = $pendingQuery->count();
 
         return [
             Stat::make('Total Order', $totalOrders)
@@ -37,6 +60,13 @@ class StatsOverview extends StatsOverviewWidget
                 ->description('Menunggu konfirmasi admin')
                 ->color('warning')
                 ->icon('heroicon-o-clock'),
+        ];
+    }
+
+    protected function getListeners(): array
+    {
+        return [
+            'refresh-stats' => '$refresh',
         ];
     }
 }

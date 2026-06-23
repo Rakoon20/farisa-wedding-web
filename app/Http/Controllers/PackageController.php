@@ -24,11 +24,11 @@ class PackageController extends Controller
      */
     public function show($code)
     {
-        $package = Package::where('code', $code)
+        $package = Package::with(['items', 'images']) // eager load images
+            ->where('code', $code)
             ->where('is_active', true)
             ->firstOrFail();
 
-        // Ambil item-item dalam paket
         $packageItems = $package->items()->get();
 
         return view('package-detail', compact('package', 'packageItems'));
