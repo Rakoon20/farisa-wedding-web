@@ -54,7 +54,7 @@
                     </li>
                     <li class="flex items-center space-x-3">
                         <i class="fas fa-envelope text-pink-400"></i>
-                        <span class="text-gray-400">info@farisawo.com</span>
+                        <span class="text-gray-400">adminfarisa@gmail.com</span>
                     </li>
                     <li class="flex items-center space-x-3">
                         <i class="fas fa-clock text-pink-400"></i>
