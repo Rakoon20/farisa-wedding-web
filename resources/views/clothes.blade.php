@@ -6,9 +6,9 @@
     <div class="container mx-auto px-4">
         <!-- Header -->
         <div class="text-center mb-12">
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-2">Koleksi <span class="text-pink-500">Baju Pernikahan</span></h1>
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-2">Koleksi<span class="text-pink-500"> Farisa</span></h1>
             <div class="w-24 h-1 bg-pink-500 mx-auto mb-4"></div>
-            <p class="text-gray-600 max-w-2xl mx-auto">Inspirasi model baju untuk hari spesial Anda</p>
+            <p class="text-gray-600 max-w-2xl mx-auto">Inspirasi model Pakaian untuk hari spesial Anda</p>
         </div>
 
         <!-- Grid Koleksi Baju -->

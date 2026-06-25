@@ -6,7 +6,7 @@
     <!-- Hero Section -->
     <section class="relative bg-cover bg-center py-20" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1600');">
         <div class="container mx-auto px-4 text-center text-white">
-            <h1 class="text-4xl md:text-5xl font-bold mb-4">Galeri <span class="text-pink-400">Pernikahan</span></h1>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Galeri <span class="text-pink-400">Farisa</span></h1>
             <div class="w-20 h-1 bg-pink-400 mx-auto mb-4"></div>
             <p class="text-lg max-w-2xl mx-auto">Inspirasi dekorasi dan momen bahagia dari klien-klien kami</p>
         </div>
@@ -76,7 +76,7 @@
     <!-- CTA Section -->
     <section class="py-16 bg-pink-500">
         <div class="container mx-auto px-4 text-center">
-            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Ingin Dekorasi Seperti di Galeri?</h2>
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Ingin Seperti di Galeri?</h2>
             <p class="text-white text-lg mb-8 max-w-2xl mx-auto">Konsultasikan pernikahan impian Anda dengan tim profesional kami.</p>
             <a href="{{ url('/contact') }}" class="bg-white text-pink-500 px-8 py-3 rounded-full hover:bg-gray-100 transition duration-300 font-semibold">
                 Konsultasi Sekarang
