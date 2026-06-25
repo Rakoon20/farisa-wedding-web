@@ -56,10 +56,11 @@ class PackageForm
                     ->label("Deskripsi")
                     ->rows(3)
                     ->columnSpanFull(),
+
                 // Grid untuk harga, diskon, dan status aktif
                 Grid::make(3)->schema([
                     TextInput::make("price")
-                        ->label("Harga Paket")
+                        ->label("Harga Final (setelah diskon)")
                         ->required()
                         ->numeric()
                         ->prefix("Rp")
@@ -67,42 +68,51 @@ class PackageForm
                         ->default(0)
                         ->readOnly()
                         ->dehydrated(true)
-                        ->helperText("Harga dihitung otomatis dari item dan quantity"),
+                        ->helperText("Harga final setelah dikurangi diskon"),
                     TextInput::make("discount")
                         ->label("Diskon (Rp)")
                         ->numeric()
                         ->prefix("Rp")
                         ->minValue(0)
                         ->default(0)
-                        ->helperText("Potongan harga dalam Rupiah (maksimal 50% dari harga)")
+                        ->helperText("Potongan harga dalam Rupiah (maksimal 50% dari total item)")
                         ->live()
                         ->afterStateUpdated(function ($state, Set $set, Get $get) {
-                            $price = $get('price');
-                            if ($price > 0) {
-                                $maxDiscount = $price * 0.5;
+                            $totalItems = static::calculateItemsTotal($get);
+                            if ($totalItems > 0) {
+                                $maxDiscount = $totalItems * 0.5;
                                 if ($state > $maxDiscount) {
                                     $set('discount', $maxDiscount);
                                     \Filament\Notifications\Notification::make()
                                         ->warning()
                                         ->title('Diskon Melebihi Batas')
-                                        ->body('Diskon tidak boleh lebih dari 50% harga paket. Diskon di-set ke ' . number_format($maxDiscount, 0, ',', '.') . '.')
+                                        ->body('Diskon tidak boleh lebih dari 50% total item. Diskon di-set ke ' . number_format($maxDiscount, 0, ',', '.') . '.')
                                         ->send();
                                 }
                             }
+                            static::calculateTotalPrice($set, $get);
                         }),
                     Toggle::make("is_active")
                         ->label("Aktif")
                         ->default(true)
                         ->inline(false),
                 ]),
-                // Tampilkan harga setelah diskon
-                Placeholder::make("final_price")
-                    ->label("Harga Setelah Diskon")
-                    ->content(function (Get $get) {
-                        $price = $get('price') ?? 0;
-                        $discount = $get('discount') ?? 0;
-                        return 'Rp ' . number_format($price - $discount, 0, ',', '.');
-                    }),
+
+                // 🔥 Placeholder untuk menampilkan harga sebelum diskon (total item) dan harga final
+                Grid::make(2)->schema([
+                    Placeholder::make("items_total")
+                        ->label("Total Item (sebelum diskon)")
+                        ->content(function (Get $get) {
+                            $total = static::calculateItemsTotal($get);
+                            return 'Rp ' . number_format($total, 0, ',', '.');
+                        }),
+                    Placeholder::make("final_price_display")
+                        ->label("Harga Final (setelah diskon)")
+                        ->content(function (Get $get) {
+                            $price = $get('price') ?? 0;
+                            return 'Rp ' . number_format($price, 0, ',', '.');
+                        }),
+                ]),
 
                 // ===== FOTO UTAMA =====
                 FileUpload::make("image")
@@ -202,17 +212,15 @@ class PackageForm
     }
 
     /**
-     * Menghitung total harga package dari semua item dan quantity
+     * Menghitung total item tanpa diskon
      */
-    public static function calculateTotalPrice(Set $set, Get $get): void
+    public static function calculateItemsTotal(Get $get): int
     {
         $packageItems = $get('packageItems') ?? [];
         $total = 0;
-
         foreach ($packageItems as $item) {
             $itemCode = $item['item_code'] ?? null;
             $quantity = intval($item['quantity'] ?? 0);
-
             if ($itemCode && $quantity > 0) {
                 $itemModel = Item::find($itemCode);
                 if ($itemModel) {
@@ -220,7 +228,18 @@ class PackageForm
                 }
             }
         }
+        return $total;
+    }
 
-        $set('price', $total);
+    /**
+     * Menghitung total harga package setelah diskon
+     */
+    public static function calculateTotalPrice(Set $set, Get $get): void
+    {
+        $total = static::calculateItemsTotal($get);
+        $discount = intval($get('discount') ?? 0);
+        $finalTotal = $total - $discount;
+        if ($finalTotal < 0) $finalTotal = 0;
+        $set('price', $finalTotal);
     }
 }
