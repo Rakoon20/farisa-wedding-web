@@ -11,8 +11,8 @@
                 </p>
                 <div class="flex space-x-4 mt-4">
                     <a href="https://www.instagram.com/farisa_weddingdecoration?igsh=eXFoM2NncjlyajE=" class="text-gray-400 hover:text-pink-400 transition"><i class="fab fa-instagram text-xl"></i></a>
-                    <a href="#" class="text-gray-400 hover:text-pink-400 transition"><i class="fab fa-facebook text-xl"></i></a>
-                    <a href="#" class="text-gray-400 hover:text-pink-400 transition"><i class="fab fa-tiktok text-xl"></i></a>
+                    <a href="https://www.facebook.com/share/1972srVRtb/" class="text-gray-400 hover:text-pink-400 transition"><i class="fab fa-facebook text-xl"></i></a>
+                    <a href="https://www.tiktok.com/@fanesaecaa?_r=1&_t=ZS-97V19vqdJXZ" class="text-gray-400 hover:text-pink-400 transition"><i class="fab fa-tiktok text-xl"></i></a>
                 </div>
             </div>
 
@@ -33,10 +33,10 @@
                 <h4 class="font-semibold text-lg mb-4">Layanan Kami</h4>
                 <ul class="space-y-2">
                     <li class="text-gray-400">Dekorasi Wedding</li>
-                    <li class="text-gray-400">Rias Pengantin</li>
-                    <li class="text-gray-400">Dokumentasi & Video</li>
-                    <li class="text-gray-400">Katering & Prasmanan</li>
-                    <li class="text-gray-400">Entertainment & MC</li>
+                    <li class="text-gray-400">MakeUp Artist</li>
+                    <li class="text-gray-400">Dokumentasi & Video Partner</li>
+                    <li class="text-gray-400">Katering & Prasmanan Partner</li>
+                    <li class="text-gray-400">Entertainment & MC Partner</li>
                 </ul>
             </div>
 
@@ -50,7 +50,11 @@
                     </li>
                     <li class="flex items-center space-x-3">
                         <i class="fas fa-phone-alt text-pink-400"></i>
-                        <span class="text-gray-400">+62 812 3456 7890</span>
+                        <div>
+                        <span class="text-gray-400">087871181069</span>
+                        <br>
+                        <span class="text-gray-400">081212044982</span>
+                        </div>
                     </li>
                     <li class="flex items-center space-x-3">
                         <i class="fas fa-envelope text-pink-400"></i>

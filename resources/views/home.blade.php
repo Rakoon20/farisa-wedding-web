@@ -78,10 +78,10 @@
                 <!-- Image Column -->
                 <div class="lg:col-span-2 relative" data-aos="fade-right" data-aos-duration="1000" data-aos-delay="200">
                     <div class="relative group">
-                        <div class="absolute -top-4 -left-4 w-full h-full border-2 border-pink-300 rounded-lg transition-all duration-500 group-hover:-top-5 group-hover:-left-5"></div>
+
                         <div class="absolute -bottom-3 -right-3 w-20 h-20 rounded-lg opacity-40" style="background-image: radial-gradient(#ec4899 2px, transparent 2px); background-size: 10px 10px;"></div>
                         <div class="relative rounded-lg overflow-hidden shadow-2xl shadow-pink-200/50">
-                            <img src="{{ asset('images/home2.jpg') }}" alt="Farisa Wedding Decoration" class="w-full h-auto object-cover rounded-lg transition-transform duration-700 group-hover:scale-105">
+                            <img src="{{ asset('images/Farisa Wedding Logo.svg') }}" alt="Farisa Wedding Decoration" class="w-full h-auto object-cover rounded-lg transition-transform duration-700 group-hover:scale-105">
                             <div class="absolute inset-0 bg-gradient-to-t from-pink-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-lg"></div>
                         </div>
                         <!-- Floating Badge -->
