@@ -65,9 +65,10 @@
                         <i class="fas fa-envelope text-pink-500 text-2xl"></i>
                     </div>
                     <h3 class="font-semibold text-xl text-gray-800 mb-2">Email</h3>
-                    <p class="text-gray-600">info@farisawo.com</p>
-                    <p class="text-gray-600">booking@farisawo.com</p>
-                    <a href="mailto:info@farisawo.com" class="text-pink-500 text-sm mt-3 inline-block hover:underline">
+                    <p class="text-gray-600">adminfarisa@gmail.com</p>
+                    <a href="https://mail.google.com/mail/?view=cm&fs=1&to=adminfarisa@gmail.com"
+                    target="_blank"
+                    class="text-pink-500 text-sm mt-3 inline-block hover:underline">
                         <i class="fas fa-paper-plane mr-1"></i>Kirim Email
                     </a>
                 </div>
@@ -145,10 +146,10 @@
                 <a href="https://www.instagram.com/farisa_weddingdecoration?igsh=eXFoM2NncjlyajE=" class="w-14 h-14 bg-pink-500 rounded-full flex items-center justify-center text-white text-2xl hover:bg-pink-600 transition duration-300 transform hover:scale-110">
                     <i class="fab fa-instagram"></i>
                 </a>
-                <a href="#" class="w-14 h-14 bg-pink-500 rounded-full flex items-center justify-center text-white text-2xl hover:bg-pink-600 transition duration-300 transform hover:scale-110">
+                <a href="https://www.facebook.com/share/1972srVRtb/" class="w-14 h-14 bg-pink-500 rounded-full flex items-center justify-center text-white text-2xl hover:bg-pink-600 transition duration-300 transform hover:scale-110">
                     <i class="fab fa-facebook-f"></i>
                 </a>
-                <a href="#" class="w-14 h-14 bg-pink-500 rounded-full flex items-center justify-center text-white text-2xl hover:bg-pink-600 transition duration-300 transform hover:scale-110">
+                <a href="https://www.tiktok.com/@fanesaecaa?_r=1&_t=ZS-97V19vqdJXZ" class="w-14 h-14 bg-pink-500 rounded-full flex items-center justify-center text-white text-2xl hover:bg-pink-600 transition duration-300 transform hover:scale-110">
                     <i class="fab fa-tiktok"></i>
                 </a>
 

@@ -53,7 +53,7 @@
             <!-- Section Header -->
             <div class="text-center mb-16 lg:mb-20" data-aos="fade-up" data-aos-duration="800">
                 <span class="inline-block text-sm font-semibold tracking-widest text-pink-500 uppercase mb-3 bg-pink-50 px-5 py-2 rounded-full border border-pink-200/60">
-                    ✦ Sejak 2013 ✦
+                    ✦ Sejak 2018 ✦
                 </span>
                 <h2 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 mb-4 leading-tight">
                     Tentang <span class="relative inline-block">
@@ -100,7 +100,7 @@
                     <div>
                         <h3 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4 flex items-center gap-3">
                             <span class="w-1 h-8 bg-gradient-to-b from-pink-500 to-rose-500 rounded-full inline-block"></span>
-                            Mengukir Cerita Indah Sejak 2013
+                            Mengukir Cerita Indah Sejak 2018
                         </h3>
                         <p class="text-gray-600 leading-relaxed text-base md:text-lg">
                             Farisa Wedding Organizer hadir dengan <span class="font-semibold text-gray-700">dedikasi penuh</span> untuk mewujudkan pernikahan impian Anda. Kami memahami bahwa setiap pasangan memiliki kisah unik dan kami di sini untuk menerjemahkannya ke dalam setiap detail dekorasi, rangkaian acara, dan momen tak terlupakan.
