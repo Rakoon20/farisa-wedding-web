@@ -178,7 +178,7 @@
 
                 <div class="border border-gray-200 rounded-lg overflow-hidden">
                     <button @click="open = open === 2 ? null : 2" class="w-full flex justify-between items-center p-5 text-left bg-gray-50 hover:bg-gray-100 transition">
-                        <span class="font-semibold text-gray-800">Berapa lama waktu maksimal booking H-7 acara?</span>
+                        <span class="font-semibold text-gray-800">Berapa lama waktu maksimal booking acara?</span>
                         <i class="fas fa-chevron-down text-gray-500 transition-transform" :class="{ 'rotate-180': open === 2 }"></i>
                     </button>
                     <div x-show="open === 2" x-collapse class="p-5 text-gray-600 border-t border-gray-200">
@@ -188,20 +188,30 @@
 
                 <div class="border border-gray-200 rounded-lg overflow-hidden">
                     <button @click="open = open === 3 ? null : 3" class="w-full flex justify-between items-center p-5 text-left bg-gray-50 hover:bg-gray-100 transition">
-                        <span class="font-semibold text-gray-800">Apakah bisa custom paket sesuai keinginan?</span>
+                        <span class="font-semibold text-gray-800">Apakah bisa melakukan fitting baju dan survei lokasi sebelum pembayaran?</span>
                         <i class="fas fa-chevron-down text-gray-500 transition-transform" :class="{ 'rotate-180': open === 3 }"></i>
                     </button>
                     <div x-show="open === 3" x-collapse class="p-5 text-gray-600 border-t border-gray-200">
-                        Bisa! Kami menyediakan layanan custom paket sesuai dengan kebutuhan dan budget Anda. Silakan konsultasikan keinginan Anda dengan tim kami.
+                        Tidak. Customer perlu melakukan pembayaran DP sebesar 50% dari total paket terlebih dahulu sebagai konfirmasi pemesanan. Setelah pembayaran dikonfirmasi, proses fitting baju dan survei lokasi acara dapat dijadwalkan bersama tim Farisa Wedding Organizer.
                     </div>
                 </div>
 
                 <div class="border border-gray-200 rounded-lg overflow-hidden">
                     <button @click="open = open === 4 ? null : 4" class="w-full flex justify-between items-center p-5 text-left bg-gray-50 hover:bg-gray-100 transition">
-                        <span class="font-semibold text-gray-800">Apakah bisa lihat galeri dekorasi langsung?</span>
+                        <span class="font-semibold text-gray-800">Apakah bisa custom paket sesuai keinginan?</span>
                         <i class="fas fa-chevron-down text-gray-500 transition-transform" :class="{ 'rotate-180': open === 4 }"></i>
                     </button>
                     <div x-show="open === 4" x-collapse class="p-5 text-gray-600 border-t border-gray-200">
+                        Bisa! Kami menyediakan layanan custom paket sesuai dengan kebutuhan dan budget Anda. Silakan konsultasikan keinginan Anda dengan tim kami.
+                    </div>
+                </div>
+
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+                    <button @click="open = open === 5 ? null : 5" class="w-full flex justify-between items-center p-5 text-left bg-gray-50 hover:bg-gray-100 transition">
+                        <span class="font-semibold text-gray-800">Apakah bisa lihat galeri dekorasi langsung?</span>
+                        <i class="fas fa-chevron-down text-gray-500 transition-transform" :class="{ 'rotate-180': open === 5 }"></i>
+                    </button>
+                    <div x-show="open === 5" x-collapse class="p-5 text-gray-600 border-t border-gray-200">
                         Tentu! Kami memiliki galeri fisik yang bisa Anda kunjungi di alamat kami. Anda juga bisa melihat contoh dekorasi dan paket wedding secara langsung.
                     </div>
                 </div>
