@@ -93,7 +93,7 @@
                     <table>
                         <tr>
                             <td class="title">
-                                <h2>Farisa Wedding Organizer</h2>
+                                <h2>Farisa Wedding & Decoration</h2>
                             </td>
                             <td class="text-right">
                                 Invoice #: {{ $order->order_number }}<br>

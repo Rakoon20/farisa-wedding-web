@@ -37,6 +37,10 @@ class ClothForm
                                     'prewed' => 'Pre-Wedding',
                                     'adat' => 'Adat',
                                     'modern' => 'Modern',
+                                    'bridesmaid' => 'Bridesmaid',
+                                    'groomsman' => 'Groomsman',
+                                    'keluarga' => 'Keluarga',
+                                    'anak-anak' => 'Anak-anak',
                                 ]),
                             TextInput::make('sort_order')
                                 ->label('Urutan')

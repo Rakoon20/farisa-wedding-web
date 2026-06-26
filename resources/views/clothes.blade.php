@@ -10,12 +10,26 @@
             <div class="w-24 h-1 bg-pink-500 mx-auto mb-4"></div>
             <p class="text-gray-600 max-w-2xl mx-auto">Inspirasi model Pakaian untuk hari spesial Anda</p>
         </div>
+<!-- Filter Kategori -->
+<div class="flex flex-wrap justify-center gap-3 mb-10">
+    <button onclick="filterCategory('all')" 
+        class="category-btn active px-5 py-2 rounded-full bg-pink-500 text-white hover:bg-pink-600 transition">
+        Semua
+    </button>
 
+    @foreach($clothes->pluck('category')->unique()->filter() as $category)
+        <button onclick="filterCategory('{{ strtolower($category) }}')" 
+            class="category-btn px-5 py-2 rounded-full bg-white text-gray-700 shadow hover:bg-pink-500 hover:text-white transition">
+            {{ ucfirst($category) }}
+        </button>
+    @endforeach
+</div>
         <!-- Grid Koleksi Baju -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             @forelse($clothes as $cloth)
-                <div class="group bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
-                     onclick="openModal('{{ Storage::url($cloth->image) }}', '{{ $cloth->name }}', '{{ $cloth->category ?? '' }}')">
+                <div class="cloth-item group bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+                    data-category="{{ strtolower($cloth->category ?? '') }}"
+                    onclick="openModal('{{ Storage::url($cloth->image) }}', '{{ $cloth->name }}', '{{ $cloth->category ?? '' }}')">
                     <div class="relative overflow-hidden h-64">
                         <img src="{{ Storage::url($cloth->image) }}" 
                              alt="{{ $cloth->name }}"
@@ -64,6 +78,53 @@
 
 @push('scripts')
 <script>
+    function filterCategory(category) {
+
+    const items = document.querySelectorAll('.cloth-item');
+    const buttons = document.querySelectorAll('.category-btn');
+
+    buttons.forEach(btn => {
+        btn.classList.remove(
+            'bg-pink-500',
+            'text-white'
+        );
+
+        btn.classList.add(
+            'bg-white',
+            'text-gray-700'
+        );
+    });
+
+
+    event.target.classList.remove(
+        'bg-white',
+        'text-gray-700'
+    );
+
+    event.target.classList.add(
+        'bg-pink-500',
+        'text-white'
+    );
+
+
+    items.forEach(item => {
+
+        const itemCategory = item.dataset.category;
+
+
+        if(category === 'all' || itemCategory === category){
+
+            item.style.display = "block";
+
+        }else{
+
+            item.style.display = "none";
+
+        }
+
+    });
+
+}
     function openModal(imageUrl, name, category) {
         const modal = document.getElementById('imageModal');
         const modalImage = document.getElementById('modalImage');
