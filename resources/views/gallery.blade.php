@@ -16,7 +16,6 @@
     <section class="py-8 bg-white sticky top-16 z-20 shadow-sm">
         <div class="container mx-auto px-4">
             <div class="flex flex-wrap justify-center gap-3">
-                {{-- Tombol "Semua" tanpa kelas warna bawaan --}}
                 <button data-filter="all" class="filter-btn active px-6 py-2 rounded-full transition duration-300">Semua</button>
                 @foreach($categories as $key => $label)
                     <button data-filter="{{ $key }}" class="filter-btn px-6 py-2 rounded-full transition duration-300">
@@ -39,9 +38,12 @@
                                 <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition duration-300 flex items-center justify-center">
                                     <i class="fas fa-search-plus text-white text-3xl opacity-0 group-hover:opacity-100 transition duration-300"></i>
                                 </div>
-                                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4 opacity-0 group-hover:opacity-100 transition duration-300">
+                                <div class="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black to-transparent p-4 opacity-0 group-hover:opacity-100 transition duration-300">
                                     <p class="text-white font-semibold">{{ $gallery->title }}</p>
                                     <p class="text-gray-300 text-sm">{{ $gallery->subtitle }}</p>
+                                    @if($gallery->description)
+                                        <p class="text-gray-400 text-xs mt-1 line-clamp-2">{{ $gallery->description }}</p>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -59,17 +61,19 @@
     <!-- Lightbox Modal -->
     <div id="lightbox" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden items-center justify-center" onclick="closeLightbox()">
         <div class="relative max-w-5xl mx-auto p-4" onclick="event.stopPropagation()">
-            <button onclick="closeLightbox()" class="absolute -top-12 right-0 text-white text-3xl hover:text-pink-400 transition">
-                <i class="fas fa-times-circle"></i>
+            <!-- Tombol close di pojok kanan atas, tidak terlalu tinggi -->
+            <button onclick="closeLightbox()" class="absolute -top-2 -right-2 bg-black/50 hover:bg-black/70 text-white text-3xl rounded-full w-10 h-10 flex items-center justify-center transition z-10">
+                <i class="fas fa-times"></i>
             </button>
-            <button id="prevBtn" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-30 hover:bg-opacity-50 text-white p-3 rounded-full transition">
+            <button id="prevBtn" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white p-3 rounded-full transition">
                 <i class="fas fa-chevron-left text-2xl"></i>
             </button>
             <img id="lightbox-img" src="" alt="" class="max-w-full max-h-[80vh] mx-auto rounded-lg shadow-2xl">
-            <button id="nextBtn" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-30 hover:bg-opacity-50 text-white p-3 rounded-full transition">
+            <button id="nextBtn" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white p-3 rounded-full transition">
                 <i class="fas fa-chevron-right text-2xl"></i>
             </button>
             <div id="lightbox-caption" class="text-center text-white mt-4 text-lg"></div>
+            <div id="lightbox-description" class="text-center text-gray-300 text-sm mt-1"></div>
         </div>
     </div>
 
@@ -87,61 +91,58 @@
 
 @push('styles')
 <style>
-    /* Default tombol filter (abu-abu) */
     .filter-btn {
-        background-color: #e5e7eb; /* gray-200 */
-        color: #374151; /* gray-700 */
+        background-color: #e5e7eb;
+        color: #374151;
     }
-    /* Tombol aktif (pink) */
     .filter-btn.active {
-        background-color: #ec489a !important; /* pink-500 */
+        background-color: #ec489a !important;
         color: white !important;
     }
-    /* Efek hover untuk semua tombol */
     .filter-btn:hover {
         background-color: #ec489a;
         color: white;
     }
-
     .gallery-item {
         transition: all 0.3s ease;
     }
     .gallery-item.hide {
         display: none;
     }
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
 </style>
 @endpush
 
 @push('scripts')
 <script>
-    // Data gallery dari server
     const galleryData = @json($galleries);
     let currentImages = [];
     let currentIndex = 0;
 
-    // Prepare gallery data untuk lightbox
     galleryData.forEach((item, index) => {
         currentImages.push({
             src: "{{ asset('storage') }}/" + item.image,
-            caption: item.title + (item.subtitle ? ' - ' + item.subtitle : '')
+            caption: item.title + (item.subtitle ? ' - ' + item.subtitle : ''),
+            description: item.description || ''
         });
     });
 
-    // ======= FILTER GALLERY =======
     document.addEventListener('DOMContentLoaded', function () {
         const filterButtons = document.querySelectorAll('.filter-btn');
         const galleryItems = document.querySelectorAll('.gallery-item');
 
         filterButtons.forEach(button => {
             button.addEventListener('click', function () {
-                // 1. Hapus kelas 'active' dari semua tombol
                 filterButtons.forEach(btn => btn.classList.remove('active'));
-                // 2. Tambahkan 'active' ke tombol yang diklik
                 this.classList.add('active');
 
                 const filterValue = this.getAttribute('data-filter');
 
-                // 3. Tampilkan/sembunyikan item galeri
                 galleryItems.forEach(item => {
                     if (filterValue === 'all' || item.getAttribute('data-category') === filterValue) {
                         item.classList.remove('hide');
@@ -153,47 +154,42 @@
         });
     });
 
-    // ======= LIGHTBOX =======
     function openLightbox(index) {
         if (!currentImages.length) return;
         currentIndex = index;
-        const lightbox = document.getElementById('lightbox');
-        const lightboxImg = document.getElementById('lightbox-img');
-        const lightboxCaption = document.getElementById('lightbox-caption');
-        
-        lightboxImg.src = currentImages[currentIndex].src;
-        lightboxCaption.innerText = currentImages[currentIndex].caption;
-        lightbox.classList.remove('hidden');
-        lightbox.classList.add('flex');
+        updateLightboxContent();
+        document.getElementById('lightbox').classList.remove('hidden');
+        document.getElementById('lightbox').classList.add('flex');
         document.body.style.overflow = 'hidden';
     }
 
     function closeLightbox() {
-        const lightbox = document.getElementById('lightbox');
-        lightbox.classList.add('hidden');
-        lightbox.classList.remove('flex');
+        document.getElementById('lightbox').classList.add('hidden');
+        document.getElementById('lightbox').classList.remove('flex');
         document.body.style.overflow = 'auto';
+    }
+
+    function updateLightboxContent() {
+        const img = document.getElementById('lightbox-img');
+        const caption = document.getElementById('lightbox-caption');
+        const desc = document.getElementById('lightbox-description');
+        img.src = currentImages[currentIndex].src;
+        caption.innerText = currentImages[currentIndex].caption;
+        desc.innerText = currentImages[currentIndex].description;
     }
 
     function nextImage() {
         if (!currentImages.length) return;
         currentIndex = (currentIndex + 1) % currentImages.length;
-        const lightboxImg = document.getElementById('lightbox-img');
-        const lightboxCaption = document.getElementById('lightbox-caption');
-        lightboxImg.src = currentImages[currentIndex].src;
-        lightboxCaption.innerText = currentImages[currentIndex].caption;
+        updateLightboxContent();
     }
 
     function prevImage() {
         if (!currentImages.length) return;
         currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length;
-        const lightboxImg = document.getElementById('lightbox-img');
-        const lightboxCaption = document.getElementById('lightbox-caption');
-        lightboxImg.src = currentImages[currentIndex].src;
-        lightboxCaption.innerText = currentImages[currentIndex].caption;
+        updateLightboxContent();
     }
 
-    // Event listener untuk tombol prev/next
     document.getElementById('prevBtn')?.addEventListener('click', (e) => {
         e.stopPropagation();
         prevImage();
@@ -204,7 +200,6 @@
         nextImage();
     });
 
-    // Keyboard navigation
     document.addEventListener('keydown', (e) => {
         const lightbox = document.getElementById('lightbox');
         if (lightbox.classList.contains('flex')) {

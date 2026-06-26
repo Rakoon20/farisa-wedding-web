@@ -74,6 +74,7 @@ class PackageForm
                         ->numeric()
                         ->prefix("Rp")
                         ->minValue(0)
+                        ->dehydrated(true)
                         ->default(0)
                         ->helperText("Potongan harga dalam Rupiah (maksimal 50% dari total item)")
                         ->live()

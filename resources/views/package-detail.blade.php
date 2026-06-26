@@ -52,21 +52,38 @@
 
                     <!-- Content -->
                     <div class="p-8">
-                        <!-- Price with Discount -->
+                        <!-- ====== HARGA + DISKON (diperbaiki) ====== -->
+                        @php
+                            $discount = $package->discount ?? 0;
+                            $finalPrice = $package->price; // harga final sudah di database
+                            $originalPrice = $finalPrice + $discount; // harga normal sebelum diskon
+                            $hasDiscount = $discount > 0;
+                        @endphp
                         <div class="mb-6 pb-6 border-b border-gray-200">
-                            <div class="flex flex-wrap items-center gap-3">
-                                <span class="text-gray-500 text-lg">Harga Paket:</span>
-                                @php
-                                    $finalPrice = $package->price - ($package->discount ?? 0);
-                                @endphp
-                                @if($package->discount > 0)
-                                    <span class="text-gray-400 text-2xl line-through">Rp {{ number_format($package->price, 0, ',', '.') }}</span>
+                            @if($hasDiscount)
+                                <div class="space-y-1">
+                                    <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                                        <span class="text-gray-500 text-lg">Harga Normal:</span>
+                                        <span class="text-gray-400 text-2xl line-through">Rp {{ number_format($originalPrice, 0, ',', '.') }}</span>
+                                    </div>
+                                    <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                                        <span class="text-gray-500 text-lg">Diskon:</span>
+                                        <span class="text-red-500 font-semibold text-xl">- Rp {{ number_format($discount, 0, ',', '.') }}</span>
+                                        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">
+                                            Hemat Rp {{ number_format($discount, 0, ',', '.') }}
+                                        </span>
+                                    </div>
+                                    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
+                                        <span class="text-gray-500 text-lg">Total Setelah Diskon:</span>
+                                        <span class="text-pink-500 font-bold text-4xl">Rp {{ number_format($finalPrice, 0, ',', '.') }}</span>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="flex flex-wrap items-center gap-3">
+                                    <span class="text-gray-500 text-lg">Harga Paket:</span>
                                     <span class="text-pink-500 font-bold text-4xl">Rp {{ number_format($finalPrice, 0, ',', '.') }}</span>
-                                    <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">Hemat Rp {{ number_format($package->discount, 0, ',', '.') }}</span>
-                                @else
-                                    <span class="text-pink-500 font-bold text-4xl">Rp {{ number_format($package->price, 0, ',', '.') }}</span>
-                                @endif
-                            </div>
+                                </div>
+                            @endif
                         </div>
 
                         <!-- Description -->
@@ -116,9 +133,14 @@
                                         <div class="col-span-8"></div>
                                         <div class="col-span-2 text-right font-bold text-gray-800">Total:</div>
                                         <div class="col-span-2 text-right font-bold text-pink-500 text-xl">
-                                            Rp {{ number_format($package->price, 0, ',', '.') }}
+                                            Rp {{ number_format($finalPrice, 0, ',', '.') }}
                                         </div>
                                     </div>
+                                    @if($hasDiscount)
+                                        <div class="text-xs text-gray-400 text-right mt-1">
+                                            *Harga sudah termasuk diskon Rp {{ number_format($discount, 0, ',', '.') }}
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         @endif
@@ -164,7 +186,7 @@
         </div>
     </section>
 
-    <!-- Lightbox Modal (untuk preview gambar galeri) -->
+    <!-- Lightbox Modal -->
     <div id="lightboxModal" class="fixed inset-0 bg-black bg-opacity-90 hidden items-center justify-center z-50" onclick="closeLightbox()">
         <div class="relative max-w-4xl w-full mx-4" onclick="event.stopPropagation()">
             <button onclick="closeLightbox()" class="absolute -top-10 right-0 text-white text-3xl hover:text-pink-400 transition">&times;</button>

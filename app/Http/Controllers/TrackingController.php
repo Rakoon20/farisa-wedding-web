@@ -41,7 +41,6 @@ class TrackingController extends Controller
                 return $this->buildTrackingResponse($orders->first());
             }
 
-            // Multiple orders found – return list
             return response()->json([
                 'multiple' => true,
                 'orders' => $orders->map(fn($order) => [
@@ -86,6 +85,32 @@ class TrackingController extends Controller
             }
         }
 
+        $fitting = $order->fitting;
+        $fittingData = null;
+        if ($fitting) {
+            $fittingItems = $fitting->items()->with('cloth')->get();
+            $fittingData = [
+                'fitting_date'  => $fitting->fitting_date,
+                'total_clothes' => $fitting->total_clothes,
+                'size'          => $fitting->size,
+                'color'         => $fitting->color,
+                'notes'         => $fitting->notes,
+                'status'        => $fitting->status,
+                'status_label'  => match ($fitting->status) {
+                    'pending'   => 'Menunggu',
+                    'scheduled' => 'Dijadwalkan',
+                    'completed' => 'Selesai',
+                    'cancelled' => 'Dibatalkan',
+                    default     => $fitting->status,
+                },
+                'items' => $fittingItems->map(fn($item) => [
+                    'cloth_name' => $item->cloth?->name,
+                    'size'       => $item->size,
+                    'quantity'   => $item->quantity,
+                ]),
+            ];
+        }
+
         return response()->json([
             'order' => [
                 'order_number'      => $order->order_number,
@@ -116,6 +141,7 @@ class TrackingController extends Controller
                 'is_confirmed' => $p->is_confirmed,
             ]),
             'cloth_gallery' => $clothGallery,
+            'fitting' => $fittingData,
         ]);
     }
 

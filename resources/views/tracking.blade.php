@@ -165,7 +165,7 @@
         'cancelled': '<span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm">Dibatalkan</span>'
     };
 
-    function renderOrderDetail(order, payments, clothGallery) {
+    function renderOrderDetail(order, payments, clothGallery, fitting) {
         const resultDiv = document.getElementById('trackingResult');
         const statusBadge = statusBadgeMap[order.status] || order.status;
 
@@ -228,25 +228,53 @@
             html += `</div>`;
         }
 
-        // Galeri contoh baju
+        // ======== DATA FITTING & GALERI BAJU ========
         html += `<div class="mt-6 pt-4 border-t">`;
-        if (clothGallery.length > 0) {
-            html += `<h3 class="font-semibold text-lg mb-3">Contoh Model Baju</h3>
-                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">`;
-            clothGallery.forEach(cloth => {
-                html += `<div class="bg-gray-100 rounded-lg p-2 text-center cursor-pointer gallery-img" onclick="openImageModal('${cloth.image_url}')">
-                             <img src="${cloth.image_url}" alt="${escapeHtml(cloth.name)}" class="w-full h-32 object-cover rounded-md">
-                             <p class="text-sm font-medium mt-1">${escapeHtml(cloth.name)}</p>
-                             ${cloth.color ? `<p class="text-xs text-gray-500">${escapeHtml(cloth.color)}</p>` : ''}
-                         </div>`;
-            });
-            html += `</div>`;
-            html += `<p class="text-xs text-gray-500 mt-3">*Untuk fitting, silakan datang ke galeri kami. Admin akan membantu pengukuran dan pemilihan baju.</p>`;
+        if (fitting) {
+            // Tampilkan data fitting dan detail baju
+            html += `
+                <h3 class="font-semibold text-lg mb-3">Data Fitting</h3>
+                <div class="bg-gray-100 p-4 rounded-lg">
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div><span class="font-medium">Tanggal Fitting:</span> ${new Date(fitting.fitting_date).toLocaleDateString('id-ID')}</div>
+                        <div><span class="font-medium">Status:</span> ${escapeHtml(fitting.status_label)}</div>
+                        <div><span class="font-medium">Catatan:</span> ${escapeHtml(fitting.notes || '-')}</div>
+                    </div>
+                    ${fitting.items && fitting.items.length > 0 ? `
+                        <div class="mt-3 pt-2 border-t border-gray-300">
+                            <span class="font-medium text-sm">Detail Baju:</span>
+                            <ul class="mt-1 space-y-1 text-sm">
+                                ${fitting.items.map(item => `
+                                    <li class="flex justify-between">
+                                        <span>${escapeHtml(item.cloth_name)}</span>
+                                        <span class="text-gray-600">${escapeHtml(item.size)} x${item.quantity}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    ` : '<div class="text-xs text-gray-400 mt-2">Tidak ada detail baju.</div>'}
+                </div>
+            `;
         } else {
-            html += `<div class="text-gray-500 text-sm">
-                        <i class="fas fa-tshirt mr-1"></i> 
-                        Informasi contoh baju akan segera tersedia. Untuk fitting, silakan hubungi admin.
-                     </div>`;
+            // Tampilkan galeri baju jika ada, atau fallback
+            if (clothGallery.length > 0) {
+                html += `<h3 class="font-semibold text-lg mb-3">Contoh Model Baju</h3>
+                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">`;
+                clothGallery.forEach(cloth => {
+                    html += `<div class="bg-gray-100 rounded-lg p-2 text-center cursor-pointer gallery-img" onclick="openImageModal('${cloth.image_url}')">
+                                 <img src="${cloth.image_url}" alt="${escapeHtml(cloth.name)}" class="w-full h-32 object-cover rounded-md">
+                                 <p class="text-sm font-medium mt-1">${escapeHtml(cloth.name)}</p>
+                                 ${cloth.color ? `<p class="text-xs text-gray-500">${escapeHtml(cloth.color)}</p>` : ''}
+                             </div>`;
+                });
+                html += `</div>`;
+                html += `<p class="text-xs text-gray-500 mt-3">*Untuk fitting, silakan datang ke galeri kami. Admin akan membantu pengukuran dan pemilihan baju.</p>`;
+            } else {
+                html += `<div class="text-gray-500 text-sm">
+                            <i class="fas fa-tshirt mr-1"></i> 
+                            Informasi contoh baju akan segera tersedia. Untuk fitting, silakan hubungi admin.
+                         </div>`;
+            }
         }
         html += `</div>`;
 
@@ -271,7 +299,6 @@
         resultDiv.classList.remove('hidden');
     }
 
-    // Fungsi untuk fetch detail order tertentu (dipanggil dari daftar)
     function fetchOrderDetail(orderNumber) {
         const resultDiv = document.getElementById('trackingResult');
         resultDiv.innerHTML = '<div class="text-center py-8"><div class="loading-spinner"></div><p class="mt-2 text-gray-500">Memuat detail...</p></div>';
@@ -285,7 +312,7 @@
                     showToast('Detail tidak ditemukan', 'error');
                     return;
                 }
-                renderOrderDetail(data.order, data.payments, data.cloth_gallery);
+                renderOrderDetail(data.order, data.payments, data.cloth_gallery, data.fitting);
                 showToast('Detail pesanan ditemukan', 'success');
             })
             .catch(err => {
@@ -357,7 +384,7 @@
                 return;
             }
 
-            renderOrderDetail(data.order, data.payments, data.cloth_gallery);
+            renderOrderDetail(data.order, data.payments, data.cloth_gallery, data.fitting);
             showToast('Data pesanan ditemukan', 'success');
         } catch (err) {
             console.error(err);
