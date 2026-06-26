@@ -18,6 +18,7 @@ class Package extends Model
         "name",
         "description",
         "price",
+        "discount",
         "image",
         "is_active",
     ];
@@ -25,6 +26,7 @@ class Package extends Model
     protected $casts = [
         "is_active" => "boolean",
         "price" => "decimal:2",
+        "discount" => "decimal:2",
     ];
 
     /**

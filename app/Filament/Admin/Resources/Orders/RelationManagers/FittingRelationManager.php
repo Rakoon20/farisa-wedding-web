@@ -50,7 +50,6 @@ class FittingRelationManager extends RelationManager
                                 Select::make('status')
                                     ->label('Status')
                                     ->options([
-                                        'pending'   => 'Menunggu',
                                         'scheduled' => 'Dijadwalkan',
                                         'completed' => 'Selesai',
                                         'cancelled' => 'Dibatalkan',
